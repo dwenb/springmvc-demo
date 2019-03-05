@@ -178,7 +178,8 @@ public class DispatcherServlet extends HttpServlet {
                     }
 
                     //如果用户没设，就按接口类型创建一个实例
-                    Class<?>[] interfaces = clazz.getInterfaces();
+                    //原参考资料为clazz.getInterfaces(),此时下面的for循环未执行
+                    Class<?>[] interfaces = clazz.getClasses();
                     for (Class<?> i : interfaces) {
                         ioc.put(i.getName(), clazz.getDeclaredConstructor().newInstance());
                     }
