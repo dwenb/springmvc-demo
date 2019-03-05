@@ -155,21 +155,32 @@ public class DispatcherServlet extends HttpServlet {
                 if (clazz.isAnnotationPresent(DwbController.class)) {
                     //默认首字母小写作为beanName
                     String beanName = lowerFirstCase(clazz.getSimpleName());
-                    ioc.put(beanName, clazz.newInstance());
+                    ioc.put(beanName, clazz.getDeclaredConstructor().newInstance());
                 } else if (clazz.isAnnotationPresent(DwbService.class)) {
                     DwbService service = clazz.getAnnotation(DwbService.class);
                     String beanName = service.value();
 
                     //如果用户设置了名字，就用用户自己的设置
                     if (!"".equals(beanName.trim())) {
-                        ioc.put(beanName, clazz.newInstance());
+                        /**
+                         * * <pre>{@code
+                         *      * clazz.newInstance()
+                         *      * }</pre>
+                         *      *
+                         *      * can be replaced by
+                         *      *
+                         *      * <pre>{@code
+                         *      * clazz.getDeclaredConstructor().newInstance()
+                         *      * }</pre>
+                         */
+                        ioc.put(beanName, clazz.getDeclaredConstructor().newInstance());
                         continue;
                     }
 
                     //如果用户没设，就按接口类型创建一个实例
                     Class<?>[] interfaces = clazz.getInterfaces();
                     for (Class<?> i : interfaces) {
-                        ioc.put(i.getName(), clazz.newInstance());
+                        ioc.put(i.getName(), clazz.getDeclaredConstructor().newInstance());
                     }
                 }
             }
@@ -252,7 +263,7 @@ public class DispatcherServlet extends HttpServlet {
             return;
         }
 
-        Map<String, String[]> params = req.getParameterMap();
+//        Map<String, String[]> params = req.getParameterMap();
         Method method = this.handlerMapping.get(url);
         //获取方法的参数列表
         Class<?>[] paramsTypes = method.getParameterTypes();

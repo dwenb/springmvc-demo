@@ -13,6 +13,8 @@ import java.io.IOException;
 @DwbController
 @DwbRequestMapping("/demo")
 public class DemoAction {
+
+    //此注解有问题 待核查
     @DwbAutowired
     private DemoService demoService;
 
@@ -21,7 +23,11 @@ public class DemoAction {
     public void get(HttpServletRequest req, HttpServletResponse res,
                     @DwbRequestParam("name") String name) {
         System.out.println(" 参数：===================="+name);
-        String result = demoService.get(name);
+
+
+       // String result = demoService.get(name);
+
+        String result = "hello" + name;
         try {
             res.getWriter().write(result);
         } catch (IOException e) {
