@@ -1,6 +1,6 @@
 package com.spring.demo.action;
 
-import com.spring.demo.service.IDemoService;
+import com.spring.demo.service.DemoService;
 import com.spring.mvcframework.annotation.DwbAutowired;
 import com.spring.mvcframework.annotation.DwbController;
 import com.spring.mvcframework.annotation.DwbRequestMapping;
@@ -15,7 +15,7 @@ import java.io.IOException;
 public class DemoAction {
 
     @DwbAutowired
-    private IDemoService demoService;
+    private DemoService demoService;
 
 
     @DwbRequestMapping("/get")
