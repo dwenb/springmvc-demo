@@ -1,6 +1,5 @@
 package com.spring.demo.action;
 
-import com.spring.demo.service.DemoService;
 import com.spring.demo.service.IDemoService;
 import com.spring.mvcframework.annotation.DwbAutowired;
 import com.spring.mvcframework.annotation.DwbController;
@@ -15,7 +14,6 @@ import java.io.IOException;
 @DwbRequestMapping("/demo")
 public class DemoAction {
 
-    //此注解有问题 待核查
     @DwbAutowired
     private IDemoService demoService;
 
@@ -23,7 +21,7 @@ public class DemoAction {
     @DwbRequestMapping("/get")
     public void get(HttpServletRequest req, HttpServletResponse res,
                     @DwbRequestParam("name") String name) {
-        System.out.println(" 参数：===================="+name);
+        System.out.println(" 参数：====================" + name);
         String result = demoService.get(name);
         try {
             res.getWriter().write(result);
@@ -45,7 +43,13 @@ public class DemoAction {
     @DwbRequestMapping("delete")
     public void delete(HttpServletRequest req, HttpServletResponse res,
                        @DwbRequestParam("id") Integer id) {
-
+        System.out.println(" 参数：====================" + id);
+        String result = "id" + id + "已删除";
+        try {
+            res.getWriter().write(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

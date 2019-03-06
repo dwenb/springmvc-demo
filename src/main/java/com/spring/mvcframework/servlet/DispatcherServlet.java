@@ -150,9 +150,7 @@ public class DispatcherServlet extends HttpServlet {
                         continue;
                     }
 
-
                     //如果用户没设，就按接口类型创建一个实例
-                    //原参考资料为clazz.getInterfaces(),此时下面的for循环未执行
                     Class<?>[] interfaces = clazz.getInterfaces();
                     for (Class<?> i : interfaces) {
                         ioc.put(i.getName(), clazz.getDeclaredConstructor().newInstance());
@@ -268,7 +266,6 @@ public class DispatcherServlet extends HttpServlet {
             return;
         }
 
-//        Map<String, String[]> params = req.getParameterMap();
         Method method = this.handlerMapping.get(url);
         //获取方法的参数列表
         Class<?>[] paramsTypes = method.getParameterTypes();
