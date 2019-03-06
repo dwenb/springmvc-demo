@@ -1,6 +1,7 @@
 package com.spring.demo.action;
 
 import com.spring.demo.service.DemoService;
+import com.spring.demo.service.IDemoService;
 import com.spring.mvcframework.annotation.DwbAutowired;
 import com.spring.mvcframework.annotation.DwbController;
 import com.spring.mvcframework.annotation.DwbRequestMapping;
@@ -16,18 +17,14 @@ public class DemoAction {
 
     //此注解有问题 待核查
     @DwbAutowired
-    private DemoService demoService;
+    private IDemoService demoService;
 
 
     @DwbRequestMapping("/get")
     public void get(HttpServletRequest req, HttpServletResponse res,
                     @DwbRequestParam("name") String name) {
         System.out.println(" 参数：===================="+name);
-
-
-       // String result = demoService.get(name);
-
-        String result = "hello" + name;
+        String result = demoService.get(name);
         try {
             res.getWriter().write(result);
         } catch (IOException e) {
