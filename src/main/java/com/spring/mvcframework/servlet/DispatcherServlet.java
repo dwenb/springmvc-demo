@@ -34,7 +34,6 @@ public class DispatcherServlet extends HttpServlet {
 
     private Map<String, Method> handlerMapping = new HashMap<String, Method>();
 
-
     public DispatcherServlet() {
         super();
     }
@@ -105,7 +104,6 @@ public class DispatcherServlet extends HttpServlet {
         }
     }
 
-
     /**
      * IOC容器的key默认是类名首字母小写，如果是自己自己设置类名，则优先使用自定义的。
      *
@@ -118,6 +116,12 @@ public class DispatcherServlet extends HttpServlet {
         return String.valueOf(chars);
     }
 
+    /**
+     *
+     *  下面的clazz.getDeclaredConstructor().newInstance()
+     *  在3.0.1之前使用 clazz.newInstance()
+     *
+     */
     private void doInstance() {
         if (classNames.size() == 0) {
             return;
@@ -135,17 +139,6 @@ public class DispatcherServlet extends HttpServlet {
 
                     //如果用户设置了名字，就用用户自己的设置
                     if (!"".equals(beanName.trim())) {
-                        /**
-                         * * <pre>{@code
-                         *      * clazz.newInstance()
-                         *      * }</pre>
-                         *      *
-                         *      * can be replaced by
-                         *      *
-                         *      * <pre>{@code
-                         *      * clazz.getDeclaredConstructor().newInstance()
-                         *      * }</pre>
-                         */
                         ioc.put(beanName, clazz.getDeclaredConstructor().newInstance());
                         continue;
                     }
