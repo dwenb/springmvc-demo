@@ -68,70 +68,43 @@ public class DispatcherServlet extends HttpServlet {
 
     }
 
-    private void initHandleMapping() {
-        if (ioc.isEmpty()) {
-            return;
-        }
+    private void doLoadConfig(String location) {
+        InputStream fis = null;
+        try {
+            fis = this.getClass().getClassLoader().getResourceAsStream(location);
 
-        for (Map.Entry<String, Object> entry : ioc.entrySet()) {
-            Class<?> clazz = entry.getValue().getClass();
-            if (!clazz.isAnnotationPresent(DwbController.class)) {
-                continue;
+            //读取配置文件
+            if (null == fis){
+                System.out.println("扫描文件不应该为空=============");
             }
-
-            String baseUrl = "";
-
-            //获取Controller的url配置
-            if (clazz.isAnnotationPresent(DwbRequestMapping.class)) {
-                DwbRequestMapping requestMapping = clazz.getAnnotation(DwbRequestMapping.class);
-                baseUrl = requestMapping.value();
-            }
-
-            //获取Method的url值
-            Method[] methods = clazz.getMethods();
-            for (Method method : methods) {
-                //没有加RequestMapping注解的直接忽略
-                if (!method.isAnnotationPresent(DwbRequestMapping.class)) {
-                    continue;
+            p.load(fis);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (null != fis) {
+                    fis.close();
                 }
-
-                //映射URL
-                DwbRequestMapping requestMapping = method.getAnnotation(DwbRequestMapping.class);
-                String url = ("/" +baseUrl +"/" + requestMapping.value()).replaceAll("/+", "/");
-                handlerMapping.put(url, method);
-                System.out.println("mapped " + url + "," + method);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
 
-    private void doAutowired() {
-        if (ioc.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<String, Object> entry : ioc.entrySet()) {
-            //拿到实例对象中的所有属性
-            Field[] fields = entry.getValue().getClass().getDeclaredFields();
-            for (Field field : fields) {
-                if (!field.isAnnotationPresent(DwbAutowired.class)) {
-                    continue;
-                }
-
-                DwbAutowired autowired = field.getAnnotation(DwbAutowired.class);
-                String beanName = autowired.value().trim();
-                if ("".equals(beanName)) {
-                    beanName = field.getType().getName();
-                }
-                field.setAccessible(true);
-                try {
-                    field.set(entry.getValue(), ioc.get(beanName));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    continue;
-                }
+    private void doScanner(String packageName) {
+        //将所有的包路径替换为文件路径
+        URL url = this.getClass().getClassLoader().getResource("/" + packageName.replaceAll("\\.", "/"));
+        File dir = new File(url.getFile());
+        for (File file : dir.listFiles()) {
+            //如果是文件夹，继续递归
+            if (file.isDirectory()) {
+                doScanner(packageName + "." + file.getName());
+            } else {
+                classNames.add(packageName + "." + file.getName().replaceAll(".class", "").trim());
             }
         }
     }
+
 
     /**
      * IOC容器的key默认是类名首字母小写，如果是自己自己设置类名，则优先使用自定义的。
@@ -191,39 +164,69 @@ public class DispatcherServlet extends HttpServlet {
         }
     }
 
-    private void doScanner(String packageName) {
-        //将所有的包路径替换为文件路径
-        URL url = this.getClass().getClassLoader().getResource("/" + packageName.replaceAll("\\.", "/"));
-        File dir = new File(url.getFile());
-        for (File file : dir.listFiles()) {
-            //如果是文件夹，继续递归
-            if (file.isDirectory()) {
-                doScanner(packageName + "." + file.getName());
-            } else {
-                classNames.add(packageName + "." + file.getName().replaceAll(".class", "").trim());
+
+    private void doAutowired() {
+        if (ioc.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<String, Object> entry : ioc.entrySet()) {
+            //拿到实例对象中的所有属性
+            Field[] fields = entry.getValue().getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if (!field.isAnnotationPresent(DwbAutowired.class)) {
+                    continue;
+                }
+
+                DwbAutowired autowired = field.getAnnotation(DwbAutowired.class);
+                String beanName = autowired.value().trim();
+                if ("".equals(beanName)) {
+                    beanName = field.getType().getName();
+                }
+                field.setAccessible(true);
+                try {
+                    field.set(entry.getValue(), ioc.get(beanName));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
+                }
             }
         }
     }
 
-    private void doLoadConfig(String location) {
-        InputStream fis = null;
-        try {
-            fis = this.getClass().getClassLoader().getResourceAsStream(location);
 
-            //读取配置文件
-            if (null == fis){
-                System.out.println("扫描文件不应该为空=============");
+    private void initHandleMapping() {
+        if (ioc.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<String, Object> entry : ioc.entrySet()) {
+            Class<?> clazz = entry.getValue().getClass();
+            if (!clazz.isAnnotationPresent(DwbController.class)) {
+                continue;
             }
-            p.load(fis);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (null != fis) {
-                    fis.close();
+
+            String baseUrl = "";
+
+            //获取Controller的url配置
+            if (clazz.isAnnotationPresent(DwbRequestMapping.class)) {
+                DwbRequestMapping requestMapping = clazz.getAnnotation(DwbRequestMapping.class);
+                baseUrl = requestMapping.value();
+            }
+
+            //获取Method的url值
+            Method[] methods = clazz.getMethods();
+            for (Method method : methods) {
+                //没有加RequestMapping注解的直接忽略
+                if (!method.isAnnotationPresent(DwbRequestMapping.class)) {
+                    continue;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+
+                //映射URL
+                DwbRequestMapping requestMapping = method.getAnnotation(DwbRequestMapping.class);
+                String url = ("/" +baseUrl +"/" + requestMapping.value()).replaceAll("/+", "/");
+                handlerMapping.put(url, method);
+                System.out.println("mapped " + url + "," + method);
             }
         }
     }
